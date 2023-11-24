@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Image Example</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #image-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .button-container button {
+            margin: 0 10px; /* Adjust the margin as needed */
+        }
+
+        #no-more-images {
+            color: red;
+        }
+
+        #feedback-form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
+    <script type="text/javascript">
+        // Set the number of images here
+        var imagesCount = 2;
+
+        // Array to keep track of displayed images
+        var displayedImages = [];
+
+        var noMorePic = false;
+
+        // Returns a random index that has not been used yet
+        function getRandomIndex() {
+            var randomIndex;
+            do {
+                randomIndex = 1 + Math.floor(Math.random() * imagesCount);
+            } while (displayedImages.includes(randomIndex));
+
+            displayedImages.push(randomIndex);
+
+            return randomIndex;
+        }
+
+        // Returns an image tag with a random image
+        function getImageTag() {
+            if (displayedImages.length === imagesCount) {
+                noMorePic = true;
+                return '<p id="no-more-images">No more images to show</p>';
+            }
+
+            var randomIndex = getRandomIndex();
+            var testImage = new Image();
+            testImage.src = 'static/images/' + randomIndex + '.png';
+
+            if (testImage.width > 0) {
+                return '<img src="static/images/' + randomIndex + '.png"/>';
+            } else {
+                return '<img src="static/images/' + randomIndex + '.png" alt="Oh no, the image is broken!"/>';
+            }
+        }
+
+        function changeImage() {
+            var imageContainer = document.getElementById('image-container');
+            imageContainer.innerHTML = getImageTag();
+
+            // Disable buttons if there are no more images
+            if (noMorePic) {
+                disableButtons();
+            }
+        }
+
+        function disableButtons() {
+            var buttons = document.querySelectorAll('.button-container button');
+            buttons.forEach(function(button) {
+                button.disabled = true;
+            });
+        }
+
+        // Call changeImage when the window is loaded to set an initial random image
+        window.addEventListener('load', function () {
+            changeImage();
+        });
+
+        // Function to record feedback and comments
+        function recordFeedback(feedbackValue) {
+            var comments = document.getElementById('comments').value;
+            var imageName = displayedImages[displayedImages.length - 1] + '.png';
+
+            // Use AJAX or fetch to send feedback, comments, and image name to the server
+            fetch('/record_data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'feedback=' + encodeURIComponent(feedbackValue) + '&comments=' + encodeURIComponent(comments) + '&imageName=' + encodeURIComponent(imageName),
+            })
+            .then(response => response.text())
+            .then(data => {
+                console.log(data); // Log the server response (optional)
+                changeImage(); // Change the image after recording feedback
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</head>
+<body>
+
+    <div id="image-container">
+    </div>
+
+    <div class="button-container">
+        <button onclick="recordFeedback(1)">Correct</button>
+        <button onclick="recordFeedback(2)">Partially Correct</button>
+        <button onclick="recordFeedback(5)">Incorrect</button>
+    </div>
+
+    <div id="feedback-form">
+        <label for="comments">Comments:</label>
+        <textarea id="comments" name="comments" rows="4" cols="50"></textarea>
+    </div>
+</body>
+</html>
