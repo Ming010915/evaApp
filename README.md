@@ -7,7 +7,7 @@
 - Overall UI design improvements are needed.
 
 ## Instructions
-- Run the app.py file #
+- Run the app.py file
 - Open your web browser and go to http://127.0.0.1:5000/
 - Click on the buttons "Correct", "Partially Correct" or "Incorrect" to make decisions.
 - Use the comment box to write additional feedbacks.
