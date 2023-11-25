@@ -1,7 +1,7 @@
 # evaApp
 ## Unsolved Issues
 - The multiple users function has not been implemented yet.
-- The .csv file is reset after every restart of the app.
+- ~~The .csv file is reset after every restart of the app.~~
 - Image name format and the method of choosing images randomly need refinement.
 - A maximum of 3 reviews per image is not implemented yet.
 - Overall UI design improvements are needed.
