@@ -13,3 +13,6 @@
 - Use the comment box to write additional feedbacks.
 - All data will be stored in the .csv file with the format: ImageName, Feedback, Comments
 - When no more images are available, the buttons will be disabled, and a message will indicate this.
+
+## About SQLite
+- https://www.sqlitetutorial.net/download-install-sqlite/
