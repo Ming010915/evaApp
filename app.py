@@ -1,11 +1,10 @@
-#TODO: The images are repeated after changing users 
-
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 import sqlite3
 import os
 
 app = Flask(__name__)
 
+username = ""
 # Configuration
 app.config['DATABASE'] = 'feedback_data.db'
 
@@ -20,16 +19,16 @@ def create_table():
                 image_name TEXT,
                 score INTEGER,
                 comments TEXT,
-                userName TEXT
+                username TEXT
             )
         ''')
 
 def write_to_sqlite(entry):
     with get_db_connection() as conn:
         conn.execute('''
-            INSERT INTO feedback_data (image_name, score, comments, userName)
+            INSERT INTO feedback_data (image_name, score, comments, username)
             VALUES (?, ?, ?, ?)
-        ''', (entry['image_name'], entry["score"], entry['comments'], entry['userName']))
+        ''', (entry['image_name'], entry["score"], entry['comments'], entry['username']))
 
 def resultNumber(image_name):
     with get_db_connection() as conn:
@@ -53,6 +52,17 @@ def number_of_images():
     # Pass the count of images to the template
     return jsonify(message)
 
+@app.route('/get_used_images')
+def get_used_images():
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT image_name FROM feedback_data WHERE username = ?
+        ''', (username,))
+        used_images = cursor.fetchall()
+        processed_data = [item[0] for item in used_images]
+        return jsonify(processed_data)
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -61,14 +71,20 @@ def index():
 def record_data():
     comments = request.form.get('comments')
     image_name = request.form.get('imageName')
-    userName = request.form.get('userName')
+    username = request.form.get('username')
     score = request.form.get('score')
 
-    entry = {'image_name': image_name, 'score': score, 'comments': comments, 'userName': userName}
+    entry = {'image_name': image_name, 'score': score, 'comments': comments, 'username': username}
     write_to_sqlite(entry)  # Write only the latest entry to the database
     resultNumber(image_name)
     # Redirect to the index page after recording data
     return redirect(url_for('index'))
+
+@app.route('/current_user', methods=['POST'])
+def current_user():
+    global username 
+    username = request.form.get('username')
+    return username
 
 if __name__ == '__main__':
     app.run(debug=True)

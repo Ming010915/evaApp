@@ -60,16 +60,16 @@
 
         #comments {
             width: 100%;
-            resize: vertical;
+            resize: none;
         }
     </style>
 </head>
 <body>
     <div id="header">
         <select id="userSelection" onchange="changeUser()">
-            <option value="User1">User 1</option>
-            <option value="User2">User 2</option>
-            <option value="User3">User 3</option>
+            <option value="user1">User 1</option>
+            <option value="user2">User 2</option>
+            <option value="user3">User 3</option>
         </select>
     </div>
 
@@ -88,17 +88,35 @@
     </div>
 
     <script type="text/javascript">
-        var currentUser = "User1"; // Default user
+        var currentUser = document.getElementById('userSelection').value;
         var displayedImages = [];
         var noMorePic = false;
         var imageCount = 0;
+
+        fetch('/current_user', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'username=' + encodeURIComponent(currentUser),
+        })
+
+        fetch('/get_used_images')
+        .then(function (response) {
+            return response.json(); // Use response.json() to parse JSON
+        })
+        .then(function (data) {
+            displayedImages = data;
+        })
+        .catch(function (error) {
+            console.error('Error:', error);
+        });
 
         fetch('/number_of_images')
         .then(function (response) {
             return response.json(); // Use response.json() to parse JSON
         })
         .then(function (data) {
-            console.log(data);
             imageCount = data.length;
         })
         .catch(function (error) {
@@ -107,14 +125,32 @@
 
         function changeUser() {
             currentUser = document.getElementById('userSelection').value;
-            resetEnvironment();
-        }
-
-        function resetEnvironment() {
-            displayedImages = [];
-            noMorePic = false;
-            changeImage();
-            enableButtons();
+            fetch('/current_user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'username=' + encodeURIComponent(currentUser),
+            })
+            fetch('/get_used_images')
+            .then(function (response) {
+                return response.json(); // Use response.json() to parse JSON
+            })
+            .then(function (data) {
+                displayedImages = data;
+                if (displayedImages.length == imageCount) {
+                    noMorePic = true;
+                    disableButtons();
+                    changeImage(); 
+                } else {
+                    noMorePic = false;
+                    enableButtons();
+                    changeImage();
+                }
+            })
+            .catch(function (error) {
+                console.error('Error:', error);
+            });
         }
 
         function getRandomIndex() {
@@ -129,10 +165,10 @@
         }
 
         function getImageTag() {
-            if (displayedImages.length === imageCount) {
+            if (displayedImages.length == imageCount) {
                 noMorePic = true;
                 return '<p id="no-more-images">No more images to show</p>';
-            }
+            } 
 
             var randomIndex = getRandomIndex();
             var testImage = new Image();
@@ -174,19 +210,19 @@
 
         function recordFeedback(feedbackValue) {
             var comments = document.getElementById('comments').value;
-            var imageName = displayedImages[displayedImages.length - 1] + '.png';
+            var imageName = displayedImages[displayedImages.length - 1];
 
             fetch('/record_data', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: 'userName=' + encodeURIComponent(currentUser)+ '&score=' + encodeURIComponent(feedbackValue) + '&comments=' + encodeURIComponent(comments) + '&imageName=' + encodeURIComponent(imageName),
+                body: 'username=' + encodeURIComponent(currentUser)+ '&score=' + encodeURIComponent(feedbackValue) + '&comments=' + encodeURIComponent(comments) + '&imageName=' + encodeURIComponent(imageName),
             })
             .then(response => response.text())
             .then(data => {
-            console.log(data);
             changeImage();
+            document.getElementById('comments').value = '';
             })
             .catch(error => {
             console.error('Error:', error);
