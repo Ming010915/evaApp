@@ -29,13 +29,6 @@ def write_to_sqlite(entry):
             INSERT INTO feedback_data (image_name, score, comments, username)
             VALUES (?, ?, ?, ?)
         ''', (entry['image_name'], entry["score"], entry['comments'], entry['username']))
-
-def resultNumber(image_name):
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute('''
-            SELECT * FROM feedback_data WHERE image_name = ?
-        ''', (image_name,))
     
 # Initialize SQLite Database
 create_table()
@@ -61,6 +54,15 @@ def get_used_images():
         ''', (username,))
         used_images = cursor.fetchall()
         processed_data = [item[0] for item in used_images]
+        cursor.execute('''
+            SELECT image_name
+            FROM feedback_data
+            GROUP BY image_name
+            HAVING COUNT(DISTINCT username) >= 3;
+        ''')
+        repeated_images = cursor.fetchall()
+        processed_repeated_data = [item[0] for item in repeated_images]
+        processed_data = list(set(processed_data + processed_repeated_data))
         return jsonify(processed_data)
 
 @app.route('/')
@@ -76,7 +78,6 @@ def record_data():
 
     entry = {'image_name': image_name, 'score': score, 'comments': comments, 'username': username}
     write_to_sqlite(entry)  # Write only the latest entry to the database
-    resultNumber(image_name)
     # Redirect to the index page after recording data
     return redirect(url_for('index'))
 
