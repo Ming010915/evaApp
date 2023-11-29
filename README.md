@@ -8,6 +8,11 @@
 - ~~Normalisation of the database is needed.~~
 - ~~Generate a .csv file from the database.~~
 
+## Configuration
+- User names can be changed in index.html file under id="header".
+- Images need to be saved as .png file with the directory \static\images.
+- The function getRandomIndex() in index.html should be changed since the rule of images name might be different. 
+
 ## Instructions
 - Run the app.py file
 - Open your web browser and go to http://127.0.0.1:5000/
@@ -20,3 +25,4 @@
 
 ## About SQLite
 - https://www.sqlitetutorial.net/download-install-sqlite/
+- User can have a visualisation of the database by installing SQLiteStudio
