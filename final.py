@@ -1,11 +1,12 @@
 import sqlite3
 import pandas as pd
+import csv
 
 # Connect to the original SQLite database
-original_conn = sqlite3.connect('feedback_data.db')  # Replace 'feedback_data.db' with your actual original database file
+original_conn = sqlite3.connect('feedback_data.db')
 
 # Query the data from the original SQLite database
-query = "SELECT * FROM feedback_data"  # Replace 'feedback_data' with your actual table name in the original database
+query = "SELECT * FROM feedback_data"
 df = pd.read_sql_query(query, original_conn)
 
 # Close the connection to the original database
@@ -29,3 +30,31 @@ new_df.to_sql('new_table', new_conn, index=False, if_exists='replace')
 
 # Close the connection to the new database
 new_conn.close()
+
+database_file = 'new_database.db'
+table_name = 'new_table'
+output_file = 'output_file.csv'
+
+# Connect to the SQLite database
+conn = sqlite3.connect(database_file)
+cursor = conn.cursor()
+
+# Execute a query to select all data from the table
+cursor.execute(f"SELECT * FROM {table_name} ORDER BY image_name ASC")
+
+# Fetch all rows
+rows = cursor.fetchall()
+
+# Get column names
+columns = [description[0] for description in cursor.description]
+
+# Write to CSV file
+with open(output_file, 'w', newline='') as csv_file:
+    csv_writer = csv.writer(csv_file)
+    # Write the header
+    csv_writer.writerow(columns)
+    # Write the data
+    csv_writer.writerows(rows)
+
+# Close the database connection
+conn.close()
