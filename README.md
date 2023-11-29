@@ -5,6 +5,8 @@
 - Image name format and the method of choosing images randomly need refinement.
 - ~~A maximum of 3 reviews per image is not implemented yet.~~
 - Overall UI design improvements are needed.
+- Normalisation of the database is needed.
+- Generate a .csv file from the database.
 
 ## Instructions
 - Run the app.py file
