@@ -73,8 +73,7 @@
         </select>
     </div>
 
-    <div id="image-container">
-    </div>
+    <div id="image-container"></div>
 
     <div class="button-container">
         <button onclick="recordFeedback(1)">Correct</button>
@@ -88,43 +87,12 @@
     </div>
 
     <script type="text/javascript">
-        var currentUser = document.getElementById('userSelection').value;
+        var currentUser;
         var displayedImages = [];
         var noMorePic = false;
         var imageCount = 0;
 
-        fetch('/current_user', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'username=' + encodeURIComponent(currentUser),
-        })
-
-        fetch('/get_used_images')
-        .then(function (response) {
-            return response.json(); // Use response.json() to parse JSON
-        })
-        .then(function (data) {
-            displayedImages = data;
-        })
-        .catch(function (error) {
-            console.error('Error:', error);
-        });
-
-        fetch('/number_of_images')
-        .then(function (response) {
-            return response.json(); // Use response.json() to parse JSON
-        })
-        .then(function (data) {
-            imageCount = data.length;
-        })
-        .catch(function (error) {
-            console.error('Error:', error);
-        });
-
-        function changeUser() {
-            currentUser = document.getElementById('userSelection').value;
+        function fetchUserData() {
             fetch('/current_user', {
                 method: 'POST',
                 headers: {
@@ -132,25 +100,52 @@
                 },
                 body: 'username=' + encodeURIComponent(currentUser),
             })
+        }
+
+        function fetchImages() {
             fetch('/get_used_images')
             .then(function (response) {
-                return response.json(); // Use response.json() to parse JSON
+                return response.json();
             })
             .then(function (data) {
                 displayedImages = data;
-                if (displayedImages.length == imageCount) {
-                    noMorePic = true;
-                    disableButtons();
-                    changeImage(); 
-                } else {
-                    noMorePic = false;
-                    enableButtons();
-                    changeImage();
-                }
             })
             .catch(function (error) {
                 console.error('Error:', error);
             });
+        }
+
+        function fetchImageCount() {
+            fetch('/number_of_images')
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                imageCount = data.length;
+            })
+            .catch(function (error) {
+                console.error('Error:', error);
+            });
+        }
+
+        function changeUser() {
+            currentUser = document.getElementById('userSelection').value;
+            fetchUserData();
+            fetchImages();
+            fetchImageCount();
+            checkImageCount();
+        }
+
+        function checkImageCount() {
+            if (displayedImages.length == imageCount) {
+                noMorePic = true;
+                disableButtons();
+                changeImage();
+            } else {
+                noMorePic = false;
+                enableButtons();
+                changeImage();
+            }
         }
 
         function getRandomIndex() {
@@ -168,7 +163,7 @@
             if (displayedImages.length == imageCount) {
                 noMorePic = true;
                 return '<p id="no-more-images">No more images to show</p>';
-            } 
+            }
 
             var randomIndex = getRandomIndex();
             var testImage = new Image();
@@ -221,11 +216,11 @@
             })
             .then(response => response.text())
             .then(data => {
-            changeImage();
-            document.getElementById('comments').value = '';
+                changeImage();
+                document.getElementById('comments').value = '';
             })
             .catch(error => {
-            console.error('Error:', error);
+                console.error('Error:', error);
             });
         }
     </script>
