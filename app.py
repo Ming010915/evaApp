@@ -1,6 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for
-import csv
+#TODO: The images are repeated after changing users 
+
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 import sqlite3
+import os
 
 app = Flask(__name__)
 
@@ -16,42 +18,40 @@ def create_table():
             CREATE TABLE IF NOT EXISTS feedback_data (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 image_name TEXT,
-                feedback TEXT,
+                score INTEGER,
                 comments TEXT,
-                user TEXT
+                userName TEXT
             )
         ''')
 
-def read_from_csv():
-    csv_file_path = 'feedback_data.csv'
-    data = []
-    try:
-        with open(csv_file_path, 'r') as csvfile:
-            csv_reader = csv.DictReader(csvfile)
-            for row in csv_reader:
-                data.append({
-                    'image_name': row['ImageName'],
-                    'feedback': row['Feedback'],
-                    'comments': row['Comments'],
-                    'user': row['User']
-                })
-    except FileNotFoundError:
-        pass
-    return data
-
-def write_to_sqlite(data):
+def write_to_sqlite(entry):
     with get_db_connection() as conn:
-        for entry in data:
-            conn.execute('''
-                INSERT INTO feedback_data (image_name, feedback, comments, user)
-                VALUES (?, ?, ?, ?)
-            ''', (entry['image_name'], entry['feedback'], entry['comments'], entry['user']))
+        conn.execute('''
+            INSERT INTO feedback_data (image_name, score, comments, userName)
+            VALUES (?, ?, ?, ?)
+        ''', (entry['image_name'], entry["score"], entry['comments'], entry['userName']))
 
+def resultNumber(image_name):
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT * FROM feedback_data WHERE image_name = ?
+        ''', (image_name,))
+    
 # Initialize SQLite Database
 create_table()
 
-# Read data from CSV when the app starts
-data_list = read_from_csv()
+@app.route('/number_of_images')
+def number_of_images():
+    # Specify the path to your images folder
+    images_folder_path = 'static/images'
+
+    # Get the list of files in the folder
+    image_files = [f for f in os.listdir(images_folder_path) if os.path.isfile(os.path.join(images_folder_path, f))]
+    message = {'length': len(image_files) }
+
+    # Pass the count of images to the template
+    return jsonify(message)
 
 @app.route('/')
 def index():
@@ -59,16 +59,14 @@ def index():
 
 @app.route('/record_data', methods=['POST'])
 def record_data():
-    feedback = request.form.get('feedback')
     comments = request.form.get('comments')
     image_name = request.form.get('imageName')
-    user = request.form.get('user')
+    userName = request.form.get('userName')
+    score = request.form.get('score')
 
-    # Validate data if needed
-
-    data_list.append({'image_name': image_name, 'feedback': feedback, 'comments': comments, 'user': user})
-    write_to_sqlite(data_list)
-
+    entry = {'image_name': image_name, 'score': score, 'comments': comments, 'userName': userName}
+    write_to_sqlite(entry)  # Write only the latest entry to the database
+    resultNumber(image_name)
     # Redirect to the index page after recording data
     return redirect(url_for('index'))
 

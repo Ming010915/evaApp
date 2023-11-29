@@ -89,6 +89,21 @@
 
     <script type="text/javascript">
         var currentUser = "User1"; // Default user
+        var displayedImages = [];
+        var noMorePic = false;
+        var imageCount = 0;
+
+        fetch('/number_of_images')
+        .then(function (response) {
+            return response.json(); // Use response.json() to parse JSON
+        })
+        .then(function (data) {
+            console.log(data);
+            imageCount = data.length;
+        })
+        .catch(function (error) {
+            console.error('Error:', error);
+        });
 
         function changeUser() {
             currentUser = document.getElementById('userSelection').value;
@@ -99,16 +114,13 @@
             displayedImages = [];
             noMorePic = false;
             changeImage();
+            enableButtons();
         }
-
-        var imagesCount = 2;
-        var displayedImages = [];
-        var noMorePic = false;
 
         function getRandomIndex() {
             var randomIndex;
             do {
-                randomIndex = 1 + Math.floor(Math.random() * imagesCount);
+                randomIndex = 1 + Math.floor(Math.random() * imageCount);
             } while (displayedImages.includes(randomIndex));
 
             displayedImages.push(randomIndex);
@@ -117,7 +129,7 @@
         }
 
         function getImageTag() {
-            if (displayedImages.length === imagesCount) {
+            if (displayedImages.length === imageCount) {
                 noMorePic = true;
                 return '<p id="no-more-images">No more images to show</p>';
             }
@@ -138,7 +150,7 @@
             imageContainer.innerHTML = getImageTag();
 
             if (noMorePic) {
-                //disableButtons();
+                disableButtons();
             }
         }
 
@@ -149,31 +161,37 @@
             });
         }
 
+        function enableButtons() {
+            var buttons = document.querySelectorAll('.button-container button');
+            buttons.forEach(function(button) {
+                button.disabled = false;
+            });
+        }
+
         window.addEventListener('load', function () {
             changeImage();
         });
 
         function recordFeedback(feedbackValue) {
-    var comments = document.getElementById('comments').value;
-    var imageName = displayedImages[displayedImages.length - 1] + '.png';
+            var comments = document.getElementById('comments').value;
+            var imageName = displayedImages[displayedImages.length - 1] + '.png';
 
-    fetch('/record_data', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: 'user=' + encodeURIComponent(currentUser) + '&feedback=' + encodeURIComponent(feedbackValue) + '&comments=' + encodeURIComponent(comments) + '&imageName=' + encodeURIComponent(imageName),
-    })
-    .then(response => response.text())
-    .then(data => {
-        console.log(data);
-        changeImage();
-    })
-    .catch(error => {
-        console.error('Error:', error);
-    });
-}
-
+            fetch('/record_data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'userName=' + encodeURIComponent(currentUser)+ '&score=' + encodeURIComponent(feedbackValue) + '&comments=' + encodeURIComponent(comments) + '&imageName=' + encodeURIComponent(imageName),
+            })
+            .then(response => response.text())
+            .then(data => {
+            console.log(data);
+            changeImage();
+            })
+            .catch(error => {
+            console.error('Error:', error);
+            });
+        }
     </script>
 </body>
 </html>
