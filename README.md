@@ -2,7 +2,7 @@
 ## Unsolved Issues
 - ~~The multiple users function has not been implemented yet.~~
 - ~~The .csv file is reset after every restart of the app. (.csv cannot handle multiple users, solution: using SQLite database)~~
-- Image name format and the method of choosing images randomly need refinement.
+- ~~Image name format and the method of choosing images randomly need refinement.~~
 - ~~A maximum of 3 reviews per image is not implemented yet.~~
 - Overall UI design improvements are needed.
 - ~~Normalisation of the database is needed.~~
@@ -10,8 +10,7 @@
 
 ## Configuration
 - User names can be changed in index.html file under id="header".
-- Images need to be saved as .png file with the directory \static\images.
-- The function getRandomIndex() in index.html should be changed since the rule of images name might be different. 
+- Images need to be saved as .png file with the directory \static\images. 
 
 ## Instructions
 - Run the app.py file
