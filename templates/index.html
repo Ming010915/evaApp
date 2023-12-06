@@ -94,6 +94,7 @@
         var displayedImages = [];
         var noMorePic = false;
         var imageCount = 0;
+        var imageList = [];
 
         fetch('/current_user', {
             method: 'POST',
@@ -105,7 +106,7 @@
 
         fetch('/get_used_images')
         .then(function (response) {
-            return response.json(); // Use response.json() to parse JSON
+            return response.json();
         })
         .then(function (data) {
             displayedImages = data;
@@ -116,10 +117,11 @@
 
         fetch('/number_of_images')
         .then(function (response) {
-            return response.json(); // Use response.json() to parse JSON
+            return response.json();
         })
         .then(function (data) {
             imageCount = data.length;
+            imageList = data.image_files;
         })
         .catch(function (error) {
             console.error('Error:', error);
@@ -127,6 +129,7 @@
 
         function changeUser() {
             currentUser = document.getElementById('userSelection').value;
+
             fetch('/current_user', {
                 method: 'POST',
                 headers: {
@@ -134,9 +137,10 @@
                 },
                 body: 'username=' + encodeURIComponent(currentUser),
             })
+
             fetch('/get_used_images')
             .then(function (response) {
-                return response.json(); // Use response.json() to parse JSON
+                return response.json();
             })
             .then(function (data) {
                 displayedImages = data;
@@ -155,31 +159,29 @@
             });
         }
 
-        function getRandomIndex() {
-            var randomIndex;
-            do {
-                randomIndex = 1 + Math.floor(Math.random() * imageCount);
-            } while (displayedImages.includes(randomIndex));
-
-            displayedImages.push(randomIndex);
-
-            return randomIndex;
-        }
-
         function getImageTag() {
             if (displayedImages.length == imageCount) {
                 noMorePic = true;
                 return '<p id="no-more-images">No more images to show</p>';
             } 
 
-            var randomIndex = getRandomIndex();
+            var randomImage;
+            do {
+                randomImage = imageList[Math.floor(Math.random() * imageCount)];
+                var imageNameWithoutExtension = randomImage.replace(/\.[^/.]+$/, "");
+            } while (displayedImages.includes(imageNameWithoutExtension));
+
+            displayedImages.push(imageNameWithoutExtension);
+            console.log(displayedImages);
+
             var testImage = new Image();
-            testImage.src = 'static/images/' + '/' + randomIndex + '.png';
+            testImage.src = 'static/images/' + randomImage;
+            console.log(testImage);
 
             if (testImage.width > 0) {
-                return '<img src="static/images/' + '/' + randomIndex + '.png"/>';
+                return '<img src="' + testImage.src + '"/>';
             } else {
-                return '<img src="static/images/' + '/' + randomIndex + '.png" alt="Oh no, the image is broken!"/>';
+                return '<img src="' + testImage.src + '" alt="Oh no, the image is broken!"/>';
             }
         }
 

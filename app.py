@@ -40,8 +40,12 @@ def number_of_images():
 
     # Get the list of files in the folder
     image_files = [f for f in os.listdir(images_folder_path) if os.path.isfile(os.path.join(images_folder_path, f))]
-    message = {'length': len(image_files) }
 
+    message = {
+    "image_files": image_files,
+    "length": len(image_files)
+    }
+    
     # Pass the count of images to the template
     return jsonify(message)
 
