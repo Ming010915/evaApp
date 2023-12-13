@@ -13,6 +13,8 @@
 - Images need to be saved as .png file with the directory \static\images. 
 
 ## Instructions
+- Run requirement.txt file to install all the required packages.
+`pip install -r requirements.txt`
 - Run the app.py file
 - Open your web browser and go to http://127.0.0.1:5000/
 - Choose the correct current user.
