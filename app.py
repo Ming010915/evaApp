@@ -5,7 +5,6 @@ import os
 app = Flask(__name__)
 
 username = ""
-# Configuration
 app.config['DATABASE'] = 'feedback_data.db'
 
 def get_db_connection():
@@ -19,18 +18,18 @@ def create_table():
                 image_name TEXT,
                 score INTEGER,
                 comments TEXT,
-                username TEXT
+                username TEXT,
+                hard BOOLEAN
             )
         ''')
 
 def write_to_sqlite(entry):
     with get_db_connection() as conn:
         conn.execute('''
-            INSERT INTO feedback_data (image_name, score, comments, username)
-            VALUES (?, ?, ?, ?)
-        ''', (entry['image_name'], entry["score"], entry['comments'], entry['username']))
+            INSERT INTO feedback_data (image_name, score, comments, username, hard)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (entry['image_name'], entry["score"], entry['comments'], entry['username'], entry['hard']))
     
-# Initialize SQLite Database
 create_table()
 
 @app.route('/number_of_images')
@@ -46,7 +45,6 @@ def number_of_images():
     "length": len(image_files)
     }
     
-    # Pass the count of images to the template
     return jsonify(message)
 
 @app.route('/get_used_images')
@@ -79,10 +77,10 @@ def record_data():
     image_name = request.form.get('imageName')
     username = request.form.get('username')
     score = request.form.get('score')
+    hard = request.form.get('hard')
 
-    entry = {'image_name': image_name, 'score': score, 'comments': comments, 'username': username}
-    write_to_sqlite(entry)  # Write only the latest entry to the database
-    # Redirect to the index page after recording data
+    entry = {'image_name': image_name, 'score': score, 'comments': comments, 'username': username, 'hard': hard}
+    write_to_sqlite(entry)  
     return redirect(url_for('index'))
 
 @app.route('/current_user', methods=['POST'])
